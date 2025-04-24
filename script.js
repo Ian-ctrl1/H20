@@ -24,12 +24,18 @@ document.querySelectorAll('.swiper-slide img').forEach(img => {
 const audio = document.getElementById('bg-music');
 const canvas = document.getElementById('visualizer');
 const ctx = canvas.getContext('2d');
+
+canvas.width = window.innerWidth;
+canvas.height = 150;
+
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const analyser = audioCtx.createAnalyser();
 const source = audioCtx.createMediaElementSource(audio);
+
 source.connect(analyser);
 analyser.connect(audioCtx.destination);
 analyser.fftSize = 256;
+
 const bufferLength = analyser.frequencyBinCount;
 const dataArray = new Uint8Array(bufferLength);
 
@@ -47,11 +53,27 @@ function draw() {
     x += barWidth + 1;
   }
 }
+
 audio.onplay = () => {
   audioCtx.resume().then(() => {
     draw();
   });
 };
+
+// Music toggle button
+const toggleBtn = document.getElementById('music-toggle');
+toggleBtn.addEventListener('click', () => {
+  if (audio.paused) {
+    audio.play().then(() => {
+      toggleBtn.textContent = '⏸ Pause';
+    }).catch(err => {
+      console.error("Autoplay blocked:", err);
+    });
+  } else {
+    audio.pause();
+    toggleBtn.textContent = '▶ Play';
+  }
+});
 
 // Auto dark mode at night
 const hour = new Date().getHours();
